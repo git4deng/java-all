@@ -17,7 +17,7 @@ public class Array08Length {
         System.out.println("--------------------------------");
         int[] arrC=new int[3];
         System.out.println("数组arrB的长度是："+arrC.length);
-        arrC=new int[5];
+        arrC=new int[5];//这里arrC指向了另外一个对象了
         System.out.println("数组arrB的长度是："+arrC.length);
     }
 }

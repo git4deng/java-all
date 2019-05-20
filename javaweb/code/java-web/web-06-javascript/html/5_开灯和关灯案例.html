@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>开关</title>
+
+</head>
+<body>
+    <img src="../images/on.gif" id="light" flag="true">
+</body>
+<script>
+    var light= document.getElementById("light");
+    light.onclick=function () {
+        //alert(123);
+        //alert(this.src);
+       if(this.flag){
+           this.src="../images/off.gif";
+           this.flag=false;
+       }else{
+           this.src="../images/on.gif";
+           this.flag=true;
+       }
+
+
+
+    }
+</script>
+</html>

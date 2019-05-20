@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>JavaScript对象演示</title>
+    <script>
+        /*
+            Function：函数(方法)对象
+                1. 创建：
+                    1. var fun = new Function(形式参数列表,方法体);  //忘掉吧
+                    2. function 方法名称(形式参数列表){
+                            方法体
+                        }
+
+                    3. var 方法名 = function(形式参数列表){
+                            方法体
+                       }
+                2. 方法：
+
+                3. 属性：
+                    length:代表形参的个数
+                4. 特点：
+                    1. 方法定义是，形参的类型不用写,返回值类型也不写。
+                    2. 方法是一个对象，如果定义名称相同的方法，会覆盖
+                    3. 在JS中，方法的调用只与方法的名称有关，和参数列表无关
+                    4. 在方法声明中有一个隐藏的内置对象（数组），arguments,封装所有的实际参数
+                5. 调用：
+                    方法名称(实际参数列表);
+          */
+        //1.创建方式1
+        var fun1 = new Function("a","b","c","alert(a);");
+        //调用方法
+        // fun1(3,4);
+        // alert(fun1.length);
+        //2. 创建方式2
+        function fun2(a , b){
+            alert(a + b);
+        }
+
+        //fun2(3,4);
+
+        //alert(fun2.length);
+        var fun3 = function(a,b){
+            alert(a+b);
+
+        }
+        //alert(fun3.length);
+        // fun3(3,4);
+
+
+        /*fun2 = function(a , b){
+            alert(a - b);
+        }*/
+        function fun2(a , b){
+            //alert(a - b);
+            alert(a);
+            alert(b);
+        }
+
+        //fun2(3,4);
+
+        //方法调用
+        //fun2(1,2);
+        //fun2(1);
+        //fun2();
+        //fun2(1,2,3);
+
+        /*
+         * 求两个数的和
+         */
+        /*function  add(a , b){
+            return a + b;
+        }*/
+        /**
+         * 求任意个数的和
+         */
+        function add (){
+            var sum = 0;
+            for (var i = 0; i < arguments.length; i++) {
+                sum += arguments[i];
+            }
+            return sum;
+        }
+
+        var sum = add(1,2,3,4);
+        alert(sum);
+        //add(1,3);
+        //--------------------------------------------------------
+
+        /*
+
+            Array:数组对象
+                1. 创建：
+                    1. var arr = new Array(元素列表);
+                    2. var arr = new Array(默认长度);
+                    3. var arr = [元素列表];
+                2. 方法
+                    join(参数):将数组中的元素按照指定的分隔符拼接为字符串
+                    push()	向数组的末尾添加一个或更多元素，并返回新的长度。
+                3. 属性
+                    length:数组的长度
+                4. 特点：
+                    1. JS中，数组元素的类型可变的。
+                    2. JS中，数组长度可变的。
+
+
+
+         *
+         */
+        //1.创建方式1
+        /* var arr1 = new Array(1,2,3);
+         var arr2 = new Array(5);
+         var arr3 = [1,2,3,4];
+
+         var arr4 = new Array();
+
+         document.write(arr1 +"<br>");
+         document.write(arr2 +"<br>");
+         document.write(arr3 +"<br>");
+         document.write(arr4 +"<br>");*/
+
+
+        var arr = [1,"abc",true];
+        document.write(arr +"<br>");
+
+        document.write(arr[0] +"<br>");
+        document.write(arr[1] +"<br>");
+        document.write(arr[2] +"<br>");
+
+        //document.write(arr[10] +"<br>");
+        arr[10] = "hehe";
+        document.write(arr[10] +"<br>");
+        document.write(arr[9] +"<br>");
+
+        //alert(arr.length);//11
+        document.write(arr.join("--")+"<br>");
+        arr.push(11);
+        document.write(arr.join("--")+"<br>");
+
+        /*
+
+           Date：日期对象
+                1. 创建：
+                    var date = new Date();
+
+                2. 方法：
+                    toLocaleString()：返回当前date对象对应的时间本地字符串格式
+                    getTime():获取毫秒值。返回当前如期对象描述的时间到1970年1月1日零点的毫秒值差
+         *
+         */
+
+        var date = new Date();
+
+        document.write(date + "<br>");
+
+        document.write(date.toLocaleString() + "<br>");
+
+        document.write(date.getTime() + "<br>");
+
+        /*
+
+           Math：数学对象
+                1. 创建：
+                    * 特点：Math对象不用创建，直接使用。  Math.方法名();
+
+                2. 方法：
+                    random():返回 0 ~ 1 之间的随机数。 含0不含1
+                    ceil(x)：对数进行上舍入。
+                    floor(x)：对数进行下舍入。
+                    round(x)：把数四舍五入为最接近的整数。
+                3. 属性：
+                    PI
+
+         *
+         */
+
+        document.write(Math.PI +"<br>");
+        document.write(Math.random() +"<br>");
+        document.write(Math.round(3.14) +"<br>");
+        document.write(Math.ceil(3.14) +"<br>");
+        document.write(Math.floor(3.14) +"<br>");
+
+        /**
+         * 取 1~100之间的随机整数
+         *      1. Math.random()产生随机数：范围 [0,1)小数
+         *      2. 乘以 100 --> [0,99.9999] 小数
+         *      3. 舍弃小数部分 ：floor --> [0,99] 整数
+         *      4. +1 -->[0,99] 整数 [1,100]
+         *
+         *
+         */
+
+        var number =  Math.floor((Math.random() * 100)) + 1;
+        document.write(number);
+
+        /*
+
+           正则对象：
+                1. 创建
+                    1. var reg = new RegExp("正则表达式");
+                    2. var reg = /正则表达式/;
+                2. 方法
+                    1. test(参数):验证指定的字符串是否符合正则定义的规范
+
+         *
+         */
+
+        //1.
+        var reg = new RegExp("^\\w{6,12}$");
+        //2.
+        var reg2= /^\w{6,12}$/;
+
+        /*alert(reg);
+        alert(reg2);*/
+
+        var username = "zhangsan";
+
+        //验证
+        var flag = reg.test(username);
+        alert(flag);
+
+
+        /*
+
+           Global
+                1. 特点：全局对象，这个Global中封装的方法不需要对象就可以直接调用。  方法名();
+                2. 方法：
+                    encodeURI():url编码
+                    decodeURI():url解码
+
+                    encodeURIComponent():url编码,编码的字符更多
+                    decodeURIComponent():url解码
+
+                    parseInt():将字符串转为数字
+                        * 逐一判断每一个字符是否是数字，直到不是数字为止，将前边数字部分转为number
+                    isNaN():判断一个值是否是NaN
+                        * NaN六亲不认，连自己都不认。NaN参与的==比较全部问false
+
+                    eval():讲 JavaScript 字符串，并把它作为脚本代码来执行。
+                3. URL编码
+                   传智播客 =  %E4%BC%A0%E6%99%BA%E6%92%AD%E5%AE%A2
+         *
+         */
+        var str = "http://www.baidu.com?wd=传智播客";
+        var encode = encodeURI(str);
+        document.write(encode +"<br>");//%E4%BC%A0%E6%99%BA%E6%92%AD%E5%AE%A2
+        var s = decodeURI(encode);
+        document.write(s +"<br>");//传智播客
+
+
+        var str1 = "http://www.baidu.com?wd=传智播客";
+        var encode1 = encodeURIComponent(str1);
+        document.write(encode1 +"<br>");//%E4%BC%A0%E6%99%BA%E6%92%AD%E5%AE%A2
+        var s1 = decodeURIComponent(encode);
+        document.write(s1 +"<br>");//传智播客
+
+
+        var str = "a234abc";
+        var number = parseInt(str);
+        //alert(number + 1);
+
+        var a = NaN;
+
+        document.write(a == NaN);
+        document.write(isNaN(a));
+
+        var jscode = "alert(123)";
+        eval(jscode);
+
+
+    </script>
+</head>
+<body>
+
+</body>
+</html>

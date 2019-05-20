@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>轮播图</title>
+</head>
+<body>
+    <img src="../images/banner_1.jpg" width="100%" id="lunbo">
+</body>
+<script>
+    var i=1;
+    var lb=document.getElementById("lunbo");
+    setInterval(function () {
+        var src="../images/banner_"+i+".jpg";
+        lb.src=src;
+        i++;
+        if(i>3){
+            i=1;
+        }
+    },1000);
+</script>
+</html>

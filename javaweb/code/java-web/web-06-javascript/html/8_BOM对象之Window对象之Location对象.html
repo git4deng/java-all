@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Location对象</title>
+</head>
+<body>
+    <button id="btn">刷新页面</button>
+    <button id="go">点击访问百度</button>
+</body>
+<script>
+   var btn= document.getElementById("btn");
+   btn.onclick=function(){
+       location.reload();
+   }
+   // var href=location.href;
+    //alert(href);
+    document.getElementById("go").onclick=function () {
+        location.href="https://www.baidu.com";
+    }
+</script>
+</html>

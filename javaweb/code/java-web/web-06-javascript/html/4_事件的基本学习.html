@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>事件的简单介绍</title>
+
+</head>
+<body>
+    <!--<img src="../images/on.gif" id="i_on" onclick="myclick();">-->
+    <img src="../images/on.gif" id="i_on">
+</body>
+<script>
+    function myclick() {
+        alert("点击事件！");
+    }
+    var light=document.getElementById("i_on");
+    light.onclick=myclick;
+</script>
+</html>

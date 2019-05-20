@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DOM获取元素对象</title>
+
+</head>
+<body>
+    <img src="../images/on.gif" id="i_on">
+    <h1 id="title">悔创阿里杰克马</h1>
+</body>
+
+<script>
+    //通过id获取元素
+    var light=document.getElementById("i_on");
+    //alert(light);
+    //1.修改属性值
+    light.src="../images/off.gif";
+    //2.修改标签值
+    var title=document.getElementById("title");
+    title.innerText="不识妻美刘强东";
+</script>
+</html>

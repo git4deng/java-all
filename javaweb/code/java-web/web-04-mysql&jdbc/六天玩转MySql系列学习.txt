@@ -1,0 +1,1290 @@
+-- 六天玩转MySql系列学习
+
+-- 第一天
+
+-- 一、库操作
+
+-- 1.新增数据库
+-- 语法：create database 数据库名字 [库选项] 库选项包含2个选项，字符集charset和校对集collate（数据校对规则）
+create database mydatabase charset utf8;-- 注意数据库名字不能使用系统关键字和保留字，如果强行使用可以使用 反引号``建议不适用
+--  create database if not exists david_mysql_learn;
+-- 2.查看数据库
+show databases; -- 查看所有数据库
+show databases like '%mysql%';
+-- 3.查看数据库创建语句
+show create database mydatabase;
+-- 4.更新数据库
+alter database mydatabase charset utf8;
+-- 5.删除数据库
+drop database mydatabase;
+drop database if exists db1;
+-- 6.查询当前使用的数据库
+select database();
+
+-- 二、表操作
+
+-- 1.新增表 create table [if not EXISTS] 表名( 
+-- 字段名字 数据类型，
+-- 字段名字 数据类型 -- 最后一个不需要逗号
+-- )[表选项]; 表选项：字符集 （charset/character set= ）、校对集college和存储引擎（innodb、myisam)。
+create table mydatabase.student  (
+	name varchar(10),
+	gender varchar(10),
+	number varchar(10),
+	age int
+) charset utf8;
+
+-- 查询表
+show tables;
+show tables like '%s%';
+
+-- 修改表名以下2中方式都可以
+ alter table 表名 rename to 新表名;
+ alter table student rename to david_student;
+ 
+ rename table 表名 to 新表名;
+ rename table student to david_student;
+-- 修改表的字符集
+alter table student character set gbk;
+
+-- 修改表的字段 
+-- 1.增加
+alter table david_student add column id int first;
+-- 2.修改
+-- alter table 表名 change 列名 新列别 新数据类型;
+-- alter table 表名 modify 列名 新数据类型；
+
+alter table david_student MODIFY name char(20) after id;
+
+-- 3.重命名 
+alter table david_student change grade  class varchar(20);
+-- 4.删除字段(同时删除数据，不可逆，慎重）
+alter table david_student drop grade;
+-- 5 复制表
+create table 表名 like 表名
+
+-- 删除表 drop table table1,table2....(数据会删除，不可逆）
+drop table david_student;
+
+-- 三、数据操作
+-- 新增数据
+-- insert into 表名(列名1,列名2,...列名n) values(值1,值2,...值n);
+insert into student (id,name,age,grade) values (1,'david',30,'class001');
+-- 查询数据
+select * from student;
+select name,age,grade from student where id=1;
+-- 更新数据
+update student set grade='3-1' where id=1;
+-- 删除数据
+ delete from student where id=1;
+
+-- 四、编码问题
+-- 查看服务器识别的全部字符集
+show CHARACTER set;
+-- 查看服务器默认对外处理的字符集
+show VARIABLES like 'character_set%';
+-- 修改服务器默认接收的字符集 
+set character_set_client=utf8;
+-- 修改服务器返回给客户端的字符集
+set character_set_results=utf8;
+-- 五、校对集问题
+-- _bin:binary,二进制进行比较，区分大小写
+-- _cs:case sensitive  ,大小写敏感，区分大小写
+-- _ci:case insensitive 不区分大小写
+-- 查看所有校验集
+show collation;
+-- 体验一下校对集
+create table my_collate_bin(
+	name char(10)
+)charset utf8 collate utf8_bin;
+create table my_collate_ci(
+	name char(10)
+)charset utf8 collate utf8_general_ci;
+show tables;
+insert into my_collate_bin VALUES ('a'),('A'),('b'),('B');
+insert into my_collate_ci VALUES ('a'),('A'),('b'),('B');
+select * from my_collate_bin order by name;-- A B a b
+select * from my_collate_ci order by name;-- a A b B
+
+
+-- 六、校对集 只有数据产生比较的时候校对集才会生效
+
+-- _bin:BINARY ,二进制比较，区分大小写
+-- _cs:case SENSITIVE 大小写敏感
+-- _ci :case insensitive 大小写不敏感
+-- 查看数据库校对集
+show COLLATION;
+-- --------------------------------------------------------------------------------------
+-- 第二天
+
+-- 一、数据类型
+-- SQL中将数据类型分为三大类：数值型、字符串型、日期时间型
+-- 1.数值型：数值型分为整数型和小数型
+-- 1.1 整数型
+-- tinyint 1个字节 最大值为256 （常用）
+--  SMALINT:2个字节 
+-- MEDIUMINT:3个字节
+-- int/intege 4个字节 （常用）
+-- bigint 8个字节
+
+create TABLE my_int(
+int_1 TINYINT,
+int_2 SMALLINT,
+int_3 MEDIUMINT,
+int_4 INT,
+int_5 BIGINT
+) charset utf8;
+
+insert into my_int values( 100,100,100,100,100);
+insert into my_int values( 'a',100,100,100,100);-- 数据类型错误
+insert into my_int values( 255,100,100,100,100);-- 超出范围
+
+-- 无符号类型
+alter TABLE my_int MODIFY int_1 tinyint UNSIGNED;
+insert into my_int values( 255,100,100,100,100);
+
+desc my_int;
+
+alter table my_int add int_6 TINYINT(1) UNSIGNED;-- 指定显示宽度为1，
+alter table my_int add int_7 TINYINT(2) ZEROFILL;-- 显示宽度为2，0填充
+-- 注意：显示宽度并不能影响数据最值，数据最值由数据类型指定
+desc my_int;
+-- ZEROFILL:零填充自动设置数据是无符号的
+insert into my_int values( 255,100,100,100,100,0,1);
+select * from my_int;
+
+-- 2.小数型 浮点型和定典型
+-- 浮点型：小数点浮动，精度有限，而且会丢失精度
+-- 定点型：小数点固定，精度固定，不会丢失精度
+--
+-- 2.1 浮点型
+-- float 单精度，占用4个字节，精度范围大概7位左右
+-- double 双精度 占用8个字节，精度范围大概15位左右
+-- 浮点的使用方式：直接float表示没有小数部分，float(M,D)，M代表总长度，D代表小数的长度，整数长度为M-D
+create table my_float(
+	f1 float,
+	f2 float(10,2),-- 超出精度范围
+	f3 float(6,2)-- 在精度范围之内
+);
+insert into my_float values (1000.10,1000.10,1000.10);
+insert into my_float values (1234567890,12345678.90,1234.56);
+insert into my_float values (99999999,999999.99,9999.99);
+-- 整数不可以超出指定长度，小数部分可以超出指定长度，系统会自动四舍五入
+insert into my_float values(123456,123456.67889,1234.1111);
+
+insert into my_float values(123456,123456.67889,12345.1111);-- 错误的
+   
+-- 注意 由于小数部分四舍五入的时候进位导致整数超出范围，系统是允许的
+
+insert into my_float values (99999999,999999.99,9999.99);
+select * from my_float;
+
+-- 定点型：小数点固定，精度固定，不会丢失精度
+-- 创建定点数表
+create table my_decimal(
+    f1 float(10,2),
+    d1 decimal(10,2)
+)charset utf8;
+-- 插入测试数据
+insert into my_decimal values (99999999.99,99999999.99);
+insert into my_decimal values (123456789.99,2015.1314);-- 报错
+insert into my_decimal values (123456.99,2015.1314);
+select * from my_decimal;
+
+-- 日期类型
+-- datetime 日期时间，其格式为：yyyy-MM-dd HH:mm:ss
+-- date datetime的date部分
+-- time:时间段，包含正负时间段
+-- timestamp:时间戳，但并不是真正意义上的时间戳，其是从1970年开始计算的，格式和datetime一致
+-- year：年份，共有两种格式，分别为year(2)和year(4)
+create table my_date(
+	d1 datetime,
+	d2 date,
+	d3 time,
+  d4 TIMESTAMP,-- 默认不允许为空
+	d5 YEAR
+) charset utf8;
+
+
+insert into my_date values ('2017-05-06 13:15:00','2017-05-06','13:15:00','2017-05-06 13:15:00',2017);
+insert into my_date values ('2017-05-06 13:15:00','2017-05-06','-113:15:00','2017-05-06 13:15:00',69);
+insert into my_date values ('2017-05-06 13:15:00','2017-05-06','-2 13:15:00','2017-05-06 13:15:00',70);
+
+select * from my_date;
+
+-- 更新记录，验证时间戳类型的字段是否会自动更新
+update my_date set d1 = SYSDATE() where d5 = 1970;
+
+-- 字符串类型
+-- sql中字符串类型分为：char、varchar、text、blob、enum和set
+-- 1.定长字符 char（4） 在utf-8环境下，需要4*3=12个字节 gbk 4*2=8个字节，浪费空间效率高
+-- 2.变长字符 varchar(4) 若存储10个汉字，在utf8环境下，需要10*3+1=31个字节，多的一个字节来存储实际长度，
+-- 节省空间效率相对低
+-- 3.文本字符 超过255个字符就使用文本字符，text,存储文字，blob,存储二进制数据
+-- 4.枚举字符串  enum 节省存储空间（枚举数据通常都有一个别名），枚举实际上存储的是数值而不是字符串本身
+-- 枚举存储的数据必须是事先定义好的数据，规范数据格式
+
+
+
+create table my_enum(
+	gender enum('男','女','保密')
+) charset utf8;
+insert into my_enum values('女'),('男'),('保密');
+insert into my_enum values ('male');-- 报错
+select * from my_enum;
+-- 枚举可以节省空间，实际数据存放的是枚举的index
+select gender+0,gender from my_enum;-- 前面输出的是数字，index从1开始
+-- 因为枚举存储的是数值（index),所以我们也可以直接插入数值
+insert into my_enum values (1);-- 男
+
+-- 5.集合字符 set 跟枚举类似，实际存储的是数值而不是字符串，但是集合是多选的，枚举是单选的
+-- 创建集合表
+create table my_set(
+    hobby set('音乐','电影','旅行','美食','摄影','运动','宠物')
+)charset utf8;
+desc  my_set;
+
+-- 插入测试数据
+insert into my_set values ('电影,美食,宠物');
+
+select * from my_set;
+-- 00000101 反过来 10100000  即 音乐 旅行
+insert into my_set values (5);
+-- 0000 0111-->1110 0000
+insert into my_set values (7);
+-- 0000 1000 -->0001 0000 美食
+insert into my_set values (8);
+
+-- 第三天 
+
+-- 一、列属性
+-- 列属性有很多：null,not null,DEFAULT,PRIMARY key,UNIQUE key,auto_increment,COMMENT
+
+-- 1.空属性 null not NULL 空数据无法参与运算，所以尽量设置为不为null
+create table my_class(
+	grade VARCHAR(20) not null,
+  room VARCHAR(20) null -- 此处声明为空，其实就是默认为空
+);
+-- 2.描述 COMMENT
+create table my_friend(
+	name VARCHAR(20) not null comment '姓名',
+  age INT not null  comment '年龄整数'
+);
+DESC my_friend;
+show create table my_friend;
+-- 3.默认值 DEFAULT
+create table my_default(
+	name varchar(20) not null,
+  gender enum('男','女') default '男'
+);
+
+-- 4.主键 primary key:主键约束，即主键对应的字符中的数据不允许重复，如果重复，则数据操作（主要是增和改）失败
+-- 4.1 直接添加主键
+create table my_zhujian(
+	id int PRIMARY key comment '主键id',
+	name varchar(20) not null comment '名字不能为空'
+);
+desc my_zhujian;
+-- 4.2 建表语句后申明主键 
+create table my_zhujian1(
+	no char(10) not null comment '学号',
+  course char(10) not null comment '课程编号',
+  score tinyint UNSIGNED default 0,-- 分数 无符号的默认为0
+	PRIMARY key(no,course)-- 复合主键
+);
+desc my_zhujian1;
+-- 4.3建表完成后，使用修改表列属性的方式指定
+create table my_zhujian2(
+	no char(10) not null comment '学号',
+  course char(10) not null comment '课程编号',
+  score tinyint UNSIGNED default 0-- 分数 无符号的默认为0
+);
+desc my_zhujian2;
+-- 方式一
+alter table my_zhujian2 MODIFY no char(10) PRIMARY key comment '学号';
+
+-- 方式二
+
+alter table my_zhujian2 add PRIMARY key(no);-- 推荐使用
+
+-- 4.4 更新主键和删除主键：主键无法更新只有先删除后添加主键
+alter table my_zhujian2 drop PRIMARY key;
+-- 然后增加主键
+alter table my_zhujian2 add PRIMARY key(course);
+
+-- 4.5 自增组件
+create table my_auto(
+	id int PRIMARY key auto_increment,-- 默认每次加1
+	name varchar(20)
+);
+insert into my_auto (name) values('David');
+select * from my_auto;
+
+show create table my_auto;-- 可以看出下一次自增的开始值
+-- 4.6修改自增 
+alter table my_auto auto_increment = 1; -- 不成功：此处自增开始值必须比表当前自增开始值大或者等于
+alter table my_auto auto_increment = 5;
+-- 自增的起始值和步长由系统内部变量控制的
+show variables like 'auto_increment%';
+-- 咱们可以通过修改上面的两个变量实现不同的效果，但是需要注意的是：修改是会话级别，并且修改的是整个数据库，而不是单张表。
+
+set auto_increment_increment = 5;-- 修改步长为5，即每次加5
+insert into my_auto values (null,'Guobinhit');
+-- 删除自增长 删除主键然后再增加主键就可以删除自增
+alter table my_auto drop PRIMARY key;
+-- 然后增加主键
+alter table my_auto add PRIMARY key(id);
+
+-- 5 唯一：该列数据不能重复
+-- 增加唯一键
+create table my_unique(
+    number char(10) unique comment '学号',
+    name varchar(20) not null
+)charset utf8;
+desc my_unique;
+-- 测试唯一键（复合唯一，2个属性组合唯一即可）
+create table my_unique2(
+    number char(10) not null,
+    name varchar(20) not null,
+    unique key(number,name)  
+)charset utf8;
+desc my_unique2; -- 非空 加上唯一就等于主键
+
+-- 建表后增加唯一键
+-- 创建未设置唯一键的表
+create table my_unique3(
+    id int primary key auto_increment,
+    number char(10) not null,
+    name varchar(20) not null
+)charset utf8;
+-- 增加唯一键
+alter table my_unique3 add unique key(number);
+desc my_unique3;
+
+-- 注意：  唯一键与主键本质相同，区别在于：唯一键允许字段值为空，并且允许多个空值存在。
+
+-- 删除唯一键 在表中，更新唯一键的时候，可以不用先删除唯一键，因为表的唯一键允许有多个
+-- 唯一键默认使用字段名作为索引名
+alter table my_unique3 drop index number;
+
+-- 6.自动增长
+-- 6.1自增通常和主键配合使用，其特点：
+-- 1.任何字段要做自增长必须前提是本身是一个索引（key 有值，主键也是索引主键索引）
+-- 2.自增长字段必须是数字(整形)
+-- 3.一张表最多只能有一个自增长
+
+create table my_auto(
+id int  PRIMARY KEY auto_increment comment '自增',
+name varchar(4)
+)charset utf8;
+
+desc my_auto;
+
+-- 6.2自动增长的使用
+-- 当增长被给定的值位null或者默认值的时候回触发自动增长
+
+insert into my_auto (name) values ('da');
+
+select * from my_auto;
+-- 自增长第一个元素默认1，每次增加1，如果对应字段输入了值，那么自增长失效，但是下一次还是会自动增长，但是会从数据最大值开始增长
+
+insert into my_auto (id,name) values (10,'da1');
+insert into my_auto (name) values ('da2');
+
+-- 如何查看下一次自动增长的起始值？可以通过查看表的创建语句来查看
+
+show create table my_auto;
+
+-- 6.3 修改自动增长
+-- 6.3.1改大，不能改小
+alter table my_auto auto_increment =15;
+
+alter table my_auto auto_increment =1; -- 不生效
+-- 6.3.2 修改系统变量
+-- 所有系统的表现（字符集，校对集）都是由系统内部的变量进行控制的
+-- 查看自增长对应的变量
+show VARIABLES like '%auto_increment%';-- 2个值 auto_increment_increment:步长，auto_increment_offset 起始值
+-- 可以修改变量实现不同的效果，修改是对整个数据库修改，而不是单表（修改时会话级别：当此连接)
+set auto_increment_increment=5;
+
+-- 6.3.3 删除自增长
+alter table my_auto modify id int ;-- 注意 此处不能再带primary key 了,因为建表完成后主键是单独存在的。
+
+-- 7.唯一键
+-- 一张表往往需要很多字段要具有唯一性，数据不能重读，但是一张表中只能有一个主键，唯一键就可以解决此问题
+-- UNIQUE key 本质和主键差不多，唯一键允许字段为null,null不参与唯一性比较
+-- 7.1 增加组件
+-- 7.1.1 创建表的时候指定
+create table my_unique1(
+number varchar(10) UNIQUE comment '唯一，允许为空',
+name varchar(10) not null
+)charset utf8;
+desc my_unique1;
+
+-- 7.1.2 在所有的字段之后增加unique key (字段列表）,也可以增加符合唯一键
+
+create table my_unique2(
+number varchar(10)  comment '唯一，允许为空',
+name varchar(10) not null,
+UNIQUE key(number)
+)charset utf8;
+desc my_unique2;
+-- 注意：当表不存在主键的时候，我们把某个字段设置为not null而且设置为唯一，系统就会误认为该字段是主键
+create table my_unique3(
+number varchar(10) not null  comment '唯一，允许为空',
+name varchar(10) not null,
+UNIQUE key(number)
+)charset utf8;
+desc my_unique3;
+-- 可以通过查看创建表的语句来查看非主键
+show create table my_unique3;
+alter table my_unique3 add id int PRIMARY key; -- 增加主键了，刚开始的误认为主键就不会存在了，变回了unique
+
+-- 7.1.3 创建表之后追加唯一键
+create table my_unique4(
+id int PRIMARY key,
+number varchar(10) not null  comment '唯一，允许为空',
+name varchar(10) not null
+)charset utf8;
+ alter table my_unique4 add unique key(number);
+
+desc my_unique4;
+
+-- 7.2 修改&删除唯一键
+-- 唯一键不能直接修改，先删除后增加，但是一张表可以存在多个唯一键
+-- 语法：alter table 表名 drop index 索引名字 -- 唯一键默认使用字段名作为索引名
+alter table my_unique4 drop index number;
+-- 8.索引 作用： 提升查询效率，约束数据的有效
+-- 索引：系统根据某种算法，将已有的数据（未来可能新增的数据），单独建立一个文件，这个文件能够实现快速匹配数据，并且
+-- 能够快速的找到对应的记录，几乎所有的索引都是建立在字段之上的
+-- MySQL 中提供了多种索引，包括：
+-- 主键索引primary key
+-- 唯一键索引unique key
+-- 全文索引fulltext index：针对文章的内部的关键字进行索引，如何确认关键字是麻烦的事情
+-- 普通索引index
+
+-- 索引增加的条件：索引本身会产生索引文件（有时候可能比数据文件还大），会非常耗费磁盘空间；
+-- 如果某个字段经常需要作为查询条件使用，可以使用索引（一定会想办法增加）
+-- 如果某个字段需要使用数据的有效性约束，也可以使用索引约束，比如 主键‘唯一键
+
+-- 二 数据库设计表与表的关系 
+-- 将实体与实体的关系，反映到最终数据库表的设计上来，将关系分为三种： 一对一，一对多(多对一)，多对多
+-- 1.一对一：一张表的一条记录只能与另外一张表的另外一条数据对应，反之也是入此，比如 人和身份证
+-- 2.一对多 ；一张表中的记录可以对应另外一张表的多条记录，但是反之就多条记录对应一条记录比如：妈妈与孩子
+-- 3.多对多；一张表的一个记录可以对应另外一张表的多条数据，反之也是，例如老是与学生 这种需要使用一张中间表来维护老师与学生的关系
+-- 老师表与中间表关系是一对多，学生表与中间表也是一对多的关系
+
+-- 三、范式 Normal Format，是一种离散数学中的知识，是为了解决一种数据的存储与优化的问题：保存数据的存储之后，凡是能够通过关系寻找出来的
+-- 数据，坚决不重复存储：终极目标是为了减少数据的冗余。
+-- 范式是分层结构的规范，分为6层，每一层都比上一层更加严格：如果要满足下一层范式，必须先要满足上一层范式
+-- 六层范式：1NF,2NF,3NF...6NF:1NF最底层，要求最低，6NF最上层要求最高
+-- Mysql是关系型数据库：有空间浪费，也是致力于节省存储空间，与范式所有解决的问题不谋而合，在设计数据库的时候，会利用到范式来知道设计
+-- 但是数据库不单是空间问题，还要保证效率问题，范式只解决空间问题，所以数据库的设计不可能完全按照范式的要求实现，所以一般情况下，只有前三种需要满足
+-- 范式在数据库中有知道意义，但是不是强制规范
+-- 1. 1NF 第一范式
+-- 在设计表存储数据的时候，如果表中设计的字段存储的数据，在取出来之前还需要额外的处理（拆分），那么说表的设计不满足第一范式。第一范式要求
+-- 数据具有原子性：不可再分
+-- 比如
+-- 	姓名  		年龄  班级 						代课时间
+-- 李老师			22		001			2018-12-17 09:00:00,2018-12-17 10:45:00
+-- 李老师			25		002			2018-12-17 09:00:00,2018-12-17 10:45:00
+-- 如上：如果我们需要显示什么时间开始上课和什么时间下课，就需要对数据进行拆分，这就不符合1NF,数据不具有原子性，可以再分
+-- 解决方案:将该字段分为2个字段:上课和下课时间点
+
+-- 2NF
+-- 第二范式：在数据表的设计过程中，如果有符合主键，且表中有字段并不是由整个主键来确定，而是依赖主键其中的一部分的问题，称之为部分依赖。
+-- 所以第二范式解决表设计不允许出现部分依赖。
+-- 	姓名  		性别 年龄  班级 						代课开始    		代课结束
+-- 李老师			女		22		001			2018-12-17 09:00:00 	2018-12-17 10:45:00
+-- 李老师			女		25		002			2018-12-17 14:00:00		2018-12-17 15:45:00
+-- 王老师			男		25		002			2018-12-17 14:00:00		2018-12-17 15:45:00
+-- 以上表中：因为老师没有办法作为独立主键，需要结合班级才能作为主键（符合主键：一个老师在一个班永远只带一个阶段的课）
+-- 开始时间和结束时间字段都与当前的主键（代课老师和班级）形成依赖，但是性别并不依赖班级，只依赖老师，出现了性别只依赖主键的一部分，
+-- 即部分依赖不满足第二范式
+-- 解决方案：方案一、可以将老师的基本属性和其它属性分成2张表
+-- 方案二：取消符合主键，舒勇逻辑主键，即通常增加一个id作为id
+
+-- 3.3NF
+-- 第三范式：要满足第三范式必须先满足第二范式，理类上讲，应该一张表中的所有字段都应直接依赖主键（逻辑主键除外，代表业务主键），
+-- 但是如果表中某一个字段，并不直接依赖主键，而是通过某个非主键字段依赖而实现依赖主键，把这种不是直接依赖主键，而是依赖非主键
+-- 字段的依赖关系称之为传递依赖。 小白脸-->小三-->老头
+-- id	姓名  		性别 年龄  班级 						代课开始    		代课结束
+-- 	1	李老师			女		22		001			2018-12-17 09:00:00 	2018-12-17 10:45:00
+--  2	李老师			女		25		002			2018-12-17 14:00:00		2018-12-17 15:45:00
+-- 	3 王老师			男		25		002			2018-12-17 14:00:00		2018-12-17 15:45:00
+-- 以上 id为主键的话满足第一和第二范式，但是 性别不直接依赖主键，而是依赖姓名，而姓名依赖主键 存在传递依赖。 
+-- 解决方案：将存在传递依赖的字段以及依赖字段的本身单独取出，形成单独的表，然后在需要对应的信息的时候，使用对应实体表的主键加进来
+-- 老师表							 班级表                  中间表 
+-- id 	姓名 		性别			id    班级  教室				id  tid   cid  开始时间  								结束时间
+--  1 	李老师	 女        1    java  202					1		1			1			2018-12-17 09:00:00    2018-12-17 10:45:00
+
+
+-- 四、高级操作
+
+-- 1.新增数据解决问题
+-- 1.1 主键冲突 当主键冲突，可以选择性的进行处理，更新和替换
+-- 1.1.1 更新
+-- 语法： insert into 表名 （字段列表（包括主键)) values (值列表) on DUPLICATE key update  字段=新值；
+insert into my_auto (id,name) values (10,'da2');-- 主键冲突
+-- 冲突处理
+insert into my_auto (id,name) values (10,'aaaa') on DUPLICATE key update  name='aaaa';
+ 
+select * from my_auto;
+show create table my_auto;
+-- 1.1.2 替换(如果主键未冲突就直接插入数据）
+-- 语法 replace into 表名 （字段列表（包括主键)) values (值列表)；
+REPLACE into my_auto values (1,'bbbb');
+
+-- 2.蠕虫复制
+-- 2.1.根据已有表创建新表，即复制表结构，其基本语法为：
+
+-- create table + 表名 + like + [数据库名.]表名;
+
+use david_test;
+show tables;
+create table david_student_copy like test01.david_student; 
+-- 如果是同一个数据库中可以省略数据库名称
+create table david_student like david_student_copy;
+-- 2.2.先查出数据，然后将查出的数据新增一遍
+-- 语法：insert into + 表名 + [()] + select + 字段列表/* + from + 表名;
+insert into david_student select * from test01.david_student;
+select * from david_student;
+
+-- 指数爆炸增长数据 将自己表中的数据复制到自己表中
+insert into david_student (name,age,grade) select name,age,grade from david_student; -- 注意蠕虫复制时，包含主键，需要确保主键自增和不用直接复制主键
+show create table david_student;
+alter table david_student drop  id;
+select * from david_student;
+alter table david_student add id int PRIMARY key auto_increment;
+
+-- 3.更新
+-- 基本语法： update + 表名 + set + 字段 = 值 + [where 条件];
+-- 高级语法： update + 表名 + set + 字段 = 值 + [where 条件] + [limit 更新数量];
+select * from david_student;
+
+update  david_student set name='David' where age=22 LIMIT 6;
+
+-- 4.删除数据
+-- 基本语法： delete + from + 表名 + [where 条件];
+-- 高级语法： delete + from + 表名 + [where 条件] + [limit 删除数量];
+delete from david_student where age=22 limit 3;
+-- 注意：删除数据，主键的值不会发生改变，若要主键回归初始化，可以使用truncate语句
+-- TRUNCATE 表名 先删除该表，后新增该表，可以将数据清空，主键变回初始值
+
+-- 5.查询
+-- 基本语法： select + 字段列表/* + from + 表名 + [where 条件];
+-- 完整语法： select + [select 选项] + 字段列表[字段别名]/* + from + 数据源 + [where 条件] + [group by 子句] + [having 子句] + [order by 子句]+[limit子句];
+-- SELECT 选项
+-- select选项，即select对查出来的结果的处理方式。
+
+-- all：默认，保留所有的查询结果；
+-- distinct：去重，将查出来的结果中所有字段都相同的记录去除 
+select * from david_student;
+select distinct name,grade from david_student;
+
+-- 字段别名 [as] 别名
+-- 数据源 ：单表 多表，子查询都可以作为数据源
+-- where 子句
+-- 判断条件 ： 
+-- 比较运算符：>,<,=,>=,<=,!=,<>(不等于),like,BETWEEN and,in, not in
+-- 逻辑运算符：&&,||,!
+-- where 原理：where是唯一一个直接从磁盘获取数据的时候就开始判断条件：从磁盘取出一条记录，开始进行where判断，判断结果满足保存到内存，不满足直接放弃
+
+show tables;
+select * from david_student;
+update david_student set age =FLOOR(RAND()*20+20);-- floor 向下取整，rand 0-1之间的值，即20-40岁之间
+
+ALTER table david_student add height TINYINT UNSIGNED;
+ALTER table david_student add sex TINYINT UNSIGNED;
+update david_student set height=FLOOR(RAND()*20+170);
+update david_student set sex =ROUND(RAND());
+select * FROM david_student where age in (20,25,30,35,40);
+select * from david_student where age BETWEEN 20 and 30 order by age asc;-- 包括边界
+select * from david_student where 1;
+
+-- group by 分组:分组为了统计
+-- 统计函数 max,min,avg,sum,count
+select age,MAX(height),MIN(height),AVG(height),SUM(height),COUNT(height) from david_student GROUP BY age ORDER BY age asc;
+ 
+-- 注意 1.count函数 count(*) count(字段） count(字段）会忽略null
+-- 2.分组默认会按照分组的字段排序，默认为升序 所以分组后面可以加 desc和asc
+select age,MAX(height),MIN(height),AVG(height),SUM(height),COUNT(height) from david_student GROUP BY age desc;
+
+-- 多字段分组 先班级，后男女
+-- 统计每个班的男女人数
+select grade,case when sex=1 then '男' else '女' end sex,count(*) from david_student GROUP BY grade,sex ;
+-- 对分组后某个字段进行字符串连接
+select grade,case when sex=1 then '男' else '女' end sex,count(*),GROUP_CONCAT(id) from david_student GROUP BY grade,sex ;
+
+-- 回溯统计 with ROLLUP;(汇总）
+select age,COUNT(*) from david_student GROUP BY age ;
+select age,COUNT(*) from david_student GROUP BY age with ROLLUP;
+ select grade,case when sex=1 then '男' else '女' end sex,count(*) from david_student GROUP BY grade,sex with ROLLUP;
+
+-- having 子句与where子句一样：进行条件判断
+-- where 是取磁盘数据判断，分组条件是having，having几乎能做where能做的所有的判断
+
+-- 求每个班人数大于等于62的
+select grade,count(*) total from david_student GROUP BY grade having total>=62;
+-- HAVING能够使用字段别名，where不能够使用别名，因为where是从磁盘取数据就过滤，别名还未生效。别名是字段进入到内存后才会生效。
+
+-- ORDER BY 子句：依据某个字段进行排序，依赖校对集 默认 asc升序
+
+-- limit 子句 
+-- 二种使用方式 limit 数量
+select * from david_student LIMIT 10;
+-- limit 开始位置，长度；(分页）
+select * from david_student LIMIT 0,10;
+select * from david_student LIMIT 10,10;
+-- OFFSET=(页码-1）*每页显示数量
+
+
+-- 第四天
+-- 数据准备
+select * from david_student;
+ALTER TABLE david_student modify id int FIRST;
+ALTER TABLE david_student add c_id int;
+update david_student set c_id=ROUND(RAND()+2);
+create TABLE david_class(
+id int PRIMARY key,
+name varchar(20) not null
+)charset=utf8;
+insert into david_class VALUES (1,'一班'),(2,'二班');
+select * from david_class;
+
+-- 一、关联查询
+-- 连接查询分为：内连接，外连接，交叉连接，自然连接
+
+-- 1.1 交叉连接 cross join 从一张表中循环取出每一条数据到另外一张表进行匹配，匹配的 每一条数据都保留（笛卡儿积）
+
+select * from david_student cross join david_class;-- 交叉连接并没有什么用，应避免
+-- 1.2 内连接 [inner]JOIN 
+select * from david_student s inner join david_class c on s.c_id=c.id;
+
+-- 注意内链接可以使用where代替on，但是一般不用(where效率没有on高）
+select * from david_student s inner join david_class c where s.c_id=c.id;
+-- 1.3 外连接：以某张表为主，取出里面的所有记录，然后每条与另外一张表进行连接，不管能否匹配上，都保留主表数据，另外表的字段置空
+-- 1.3.1 left JOIN
+select * from david_student s left join david_class c on s.c_id=c.id;
+-- 1.3.2 right JOIN
+select * from david_student s right join david_class c on s.c_id=c.id;
+
+-- 1.4 自然连接 自动匹配连接条件，按照同名字段进行匹配，如果存在多个，多作为匹配条件 NATURAL JOIN
+
+-- 二 外键
+-- 2.1 外键 FOREIGN KEY:一张表中有个一个字段（非主键）指向另外一张表的主键，那么将该字段称为外键
+-- 2.2 增加外键 可以在创建表的时候和创建表之后增加（需考虑数据）
+-- 2.2.1 创建表时候创建外键
+create TABLE my_foreign1(
+id int PRIMARY key  auto_increment comment '学生id',
+name varchar(20) comment '学生名字',
+c_id int comment '班级id',
+FOREIGN key(c_id) REFERENCES david_class(id)
+)charset=utf8;
+desc my_foreign1;-- 注意：外键要求字段本身是一个索引（普通索引）,如果字段本身没有索引，外键会先创建一个索引，然后再创建外键本身
+show create table my_foreign1;
+
+-- 2.2.2 创建表之后创建外键
+-- Alter table 表名 add [CONSTRAINT 外键名] FOREIGN KEY(外键字段)references 父表（主键字段）
+
+create TABLE my_foreign2(
+id int PRIMARY key  auto_increment comment '学生id',
+name varchar(20) comment '学生名字',
+c_id int comment '班级id'
+)charset=utf8;
+ALTER TABLE my_foreign2 add constraint f1 FOREIGN KEY(c_id) references david_class(id);
+desc my_foreign2;
+show create table my_foreign2;
+
+-- 2.3 修改/删除外键 修改就算先删除后新增 
+-- 一张表可以有多个外键
+-- alter table 表名 drop foreign key 外键名;-- 由此可见外键名不能重复
+ALTER table my_foreign1 drop foreign key my_foreign1_ibfk_1;-- 这个外键名因未指定，系统自动生成
+desc my_foreign1;-- 注意，外键删除不能查看表结构的方式来验证，因为外键删除了对应的索引还在，需要通过查看建表语句来查看
+show create table my_foreign1;
+-- 2.4 外键的作用
+-- 外键作用默认2个：一个对父表一个对字表的约束
+-- 对子表的约束：字表数据进行写操作的时候，如果对应外键字段在父表找不到对应的匹配，那么操作会失败（增和改）
+select * from david_class;
+insert into my_foreign2 values(null,'小明',3);-- 操作失败
+insert into my_foreign2 values(null,'小明',2);
+-- 对父表的约束：父表进行写操作（删和改：都必须涉及到主键）,如果主表主键已经在字表中存在引用了，那就不允许操作。
+delete from david_class where id=2;-- 操作失败
+
+-- 2.5 外键条件
+-- 1）首先必须保证表的存储引擎是innodb,如果不是innodb,外键可以创建成功，但是没有约束效果
+-- 2) 外键字段类型必须与主表主键字段类型保持一致
+-- 3）外键名字不能重复
+-- 4）如果外键字段已经存在数据，那么追加外键的时候注意与主表主键数据对应起来
+
+-- 2.6 外键约束定制操作，三种约束模式，都是针对父表的约束
+-- 2.6.1 district:严格模式（默认的）父表不能更新或者删除已被引用的主键
+-- 2.6.2 CASCADE:级联模式；父表操作，子表也跟着操作
+-- 2.6.3 Set null :父表操作之后，字表对应的置空
+-- 通常操作（约束模式）：删除的时候字表置空，修改的时候字表级联操作
+-- 操作语法：foreign key(外键字段）references 父表（字段） on delete 模式 update 模式；
+create TABLE my_foreign3(
+id int PRIMARY key  auto_increment comment '学生id',
+name varchar(20) comment '学生名字',
+c_id int comment '班级id',
+FOREIGN key(c_id) REFERENCES david_class(id) on delete set null on update cascade -- 更新级联操作，删除置空
+)charset=utf8;
+select * from david_class;
+ALTER table my_foreign2 drop foreign key f1;
+
+insert into my_foreign3 values(null,'小明1',1),(null,'小明2',2),(null,'小明3',1),(null,'小明4',2);
+-- 更新
+update david_class set id=3 where id=1;
+select * from my_foreign3;
+-- 删除(前提条件：外键字段可以为空）
+delete from david_class where id=2;
+select * from my_foreign3;
+
+-- 2.6.4 如果一张表主键被多张表的外键使用，且外键采用的约束模式不一致，那么主表很难控制，所以实际情况，很少使用外键来处理。
+
+-- 三、联合查询
+-- 3.1 UNION[union选项] union选项 ALL 保留所有 distinct 去重，如果不写选项默认为distinct
+select * from my_foreign3
+union -- 去重
+select * from my_foreign3;
+
+select * from my_foreign3
+union all -- 保留重复
+select * from my_foreign3;
+
+-- 3.2 联合查询意义
+-- 3.2.1 查询同一张表但是需求不一样的
+-- 3.2.2 多表查询
+
+-- 3.3 union的order by：要使用order by必须使用括号将单个查询给 括起来，且必须搭配limit才会生效
+(select * from david_student where sex=1 order by age desc limit 9999999)
+union ALL
+(select * from david_student where sex=0 order by age asc limit 9999999);
+
+-- 四、子查询
+-- 子查询分类 按位置分类和按结果分类
+-- 4.1按位置分为；from：子查询跟在from之后;where子查询跟在where之后; EXISTS子查询出现在exists里面
+-- 4.2 按照结果分类：根据结果分类，可以将任何查询结果都可以理解为二维表。
+-- 标量子查询：子查询得到一行一列
+-- 列子查询：结果是一列数据
+-- 行子查询：得到的是多列一行
+-- 表子查询：得到结果是多行多列
+-- 4.2.1 标量子查询
+-- 查询一班的所有学生
+use david_test;select * from david_class;insert into david_class values(2,'二班');
+select * from david_student where c_id=(select id from david_class where name='一班');
+-- 4.2.2 列子查询
+-- 查询所有班的学生
+select * from david_student where c_id in( select id from david_class );
+-- 4.2.3 行子查询 需要构造一个行元素
+select * from david_student where ( age,height)=(select max(age),max(height) from david_student);
+
+-- 4.2.4 表子查询
+ select * from (select * from david_student ORDER BY height desc) s GROUP BY s.c_id;
+-- 4.3 exists 子查询
+-- exists 返回1或者0
+
+select  * from david_student s where EXISTS(select * from david_class c where c.id=s.c_id);
+
+
+-- 五、视图
+-- view 视图是一种有结构（有行有列)但是没有结果（结构中不存放数据）的虚拟表，view的结构来源不是自己定义，而是来源于基表
+-- 5.1 创建视图
+-- 语法：create view 视图名字 as select 语句;
+create view  v1 as select * from david_student;
+create view v2 as select * from david_class;
+create view v3 as select s.*,c.name class_name from david_student s LEFT JOIN david_class c on s.c_id =c.id;
+-- 5.2 查看视图的结构 视图是虚拟表，那么查看表的所有方式都适合
+show TABLES;
+desc v1;
+show create table v1;
+show create view v1;
+-- 5.3 修改视图
+-- 视图本身不可以修改，仅仅可以修改的是视图的来源，也就是查询语句
+-- alter view 视图名字 as  新的查询语句
+alter view v1 as select name,age,grade,height from david_student;
+-- 5.4 删除视图
+-- drop view 视图名字
+ create view v4 as select * from david_student;
+drop view v4;
+-- 5.5 视图的意义
+-- 5.5.1 视图可以节约SQL语句，将一条复杂的语句使用视图进行保存，以后可以直接对视图进行操作。
+-- 5.5.2 数据安全：视图操作是主要针对查询的，如果对试图结构进行操作，不会影响基表的数据
+-- 5.5.3 视图可以对外提供有用的数据，可以隐藏无用的关键的数据，可以保证数据安全。
+-- 5.5.4 视图可以更容易的进行权限控制
+
+-- 5.6 视图的数据操作（一般不会对视图进行数据操作）
+-- 视图可以对数据进行写操作，但是有很多限制。
+-- 5.6.1 新增数据 数据往视图插入数据
+-- 1).多表视图不能插入数据
+-- 2).在插入的数据中必须包含基表中不能为空的字段
+desc david_student;
+-- 5.6.2 删除数据
+-- 1).多表视图不能删除数据
+
+-- 5.6.3 跟新数据 更新数据对多表和单表视图都可以
+-- with check OPTION限制
+create view v5 as select * from david_student where age>30 with CHECK OPTION;
+-- with CHECK OPTION 在更新的时候必须保证视图能够查询到，如果将年龄跟新为小于30就不能更新操作。
+select * from v5;
+update v5 set age =20 where id =876;
+
+
+-- 5.7 视图算法
+-- 视图算法分为三种：
+-- UNDEFINED: 未定义，系统采用默认的算法
+-- TEMPTABLE:临时表算法，系统先执行视图的select语句，后执行外部的查询
+-- merge:合并，系统将对应视图外部的查询和内部查询合并后再一次性从数据库查询（效率高，UNDEFINED选择就是这个）
+
+-- 算法指定： 
+-- 创建视图的时候： create ALGORITHM view 视图名字 as select语句
+-- 默认就合并了，就先合并了2个查询，导致查询处非我们预想的，
+-- 即等价于执行了 select * from david_student GROUP BY c_id order by height desc 并没有得到各个班身高最高的
+create view v6 as select * from david_student order by height desc;
+select * from v6 GROUP BY c_id;
+-- 此处只当视图算法为TEMPTABLE 即先执行了视图的查询语句，然后再执行基于视图的查询，即分2次查询的
+
+create ALGORITHM=TEMPTABLE view v7 as select * from david_student order by height desc;
+select * from v7 GROUP BY c_id;
+
+-- 视图算法的指定：如果视图的select语句中会包含一个查询子句（五子句），而且很有可能顺序比外部的查询条件靠后，
+-- 一定要使用算法 template,其它情况下可以不用指定（默认).
+
+
+-- 六、数据的备份和还原
+-- 数据备份还原的方式分为： 数据表备份，单表数据的备份，SQL备份，增量备份。
+-- 6.1 数据表备份： 不需要经过SQL进行备份，直接进入到数据库文件夹复制对应的表结构以及数据文件，以后还原的时候
+-- 直接将备份的内容放进去即可。
+-- 前提条件：根据存储引擎有区别
+-- 6.1.1 存储引擎
+-- 主要包括 innodb,myisam(这2个免费）,bdb,memory,archive
+-- 查询mysql 版本
+select @@version;
+-- 查询 mysql的安装目录
+show variables like "%char%"
+-- innodb,myisam对比
+-- innodb：只有表结构，数据全部存储到ibdata1文件中，
+-- myisam：表、数据、索引全部单独分开存储。即myisam在磁盘上会存在3个文件 .frm是结构，.myd是数据 .myi是索引
+
+create table my_myisam (
+	id int
+) charset=utf8 ENGINE=myisam;
+
+-- 查看mysql数据文件存储位置
+SHOW VARIABLES LIKE '%datadir%'
+
+-- 文件备份通常适用于：myisam存储引擎，直接复制3个对应的文件即可。支持跨库的操作，但是innodb不支持跨库的操作。
+
+-- 6.2 单表数据备份，每次只能备份一张表（不能备份表结构）
+-- 通常的使用：将表中的数据进行到处到文件
+-- 备份：从表中选择数据保存到外部文件
+-- select 字段列表 into outfile 文件所在路径 from 数据源（前提是外部文件不存在）
+select *  into OUTFILE 'd:/student.txt' from david_student;-- 数据库到处的权限必须是secure_file_priv指定的路径
+-- 查看指定的导出路径
+show variables like '%secure%';
+-- 需要修改mysql 的my.ini中对应的设置重启mysql即可操作 
+-- 指定字段和行的处理方式
+-- select 字段列表 into outfile 文件所在路径 fields 字段处理，line 行处理 from 数据源
+-- fields：字段处理：enclosed by 字段使用什么内容包裹,默认是'',TERMINATED by :字段以什么结束，默认是tab键，
+-- ESCAPED by 特殊符号的处理，默认是\\，使用反斜杠转义
+-- line行处理，starting by 每行以什么开始,TERMINATED by 每行以什么结束 默认是"\r\n"换行
+select *  into OUTFILE 'd:/student.txt' enclosed by '"' TERMINATED by '|' 
+lines STARTING by 'start:'
+from david_student;
+
+-- 数据还原（这种方式表结构不存在不能还原了）
+-- load data INFILE 文件所在目录 into table 表名[字段列表] fields 字段处理，line 行处理
+
+-- 6.3 SQL备份：备份的是sql语句，系统会对表结构以及数据进行处理，变成对应的sql语句，然后进行备份，还原的时候只要
+-- 执行对应的sql即可。（主要针对表结构）
+-- 备份：mysql没有提供备份软件：mysqldump.exe(安装目录/bin中）
+-- mysqldump.exe也是一种客户端，需要操作服务器，必须连接认证
+-- mysqldump/mysqldump.exe 数据库名字 [数据表名字1，数据表名字2..]>外部文件目录
+-- 单表备份 
+mysqldump -uroot -proot david_test david_student > d:/student.sql -- 注意配置了mysql的系统环境变量path才可以使用
+
+-- 整库备份
+mysqldump -uroot -proot david_test  > d:/david_student.sql
+
+-- 还原数据
+-- 方案一：使用mysql.exe客户端还原
+mysql.exe/mysql -hpup 数据库名字 <备份文件目录;-- 可以将备份表的数据还原到其它数据库(前提是该数据库必须存在）
+mysql -uroot -proot david_recover <d:/student.sql
+
+-- 方案二.使用sql指令还原
+-- source 指定sql文件位置
+source d:/student.sql -- 注意：navicat不支持source命令，必须在cmd命令行中执行次语句，可以使用载入的方式
+
+-- sql备份的优点：可以备份表结构，缺点：会浪费空间，额外指令
+
+-- 第六天 
+-- 一、事务 trancaction
+-- 事务：一些列要发生的连续的操作，
+-- 事务安全：保护连续操作同时满足的一种机制，从而达到数据的完整性
+
+create table david_count(
+	number char(16) not null UNIQUE comment '卡号',
+  name varchar(20) not null comment '姓名',
+	money DECIMAL(10,2) default 0.0 comment '余额'
+)charset utf8;
+insert into david_count VALUES
+('0000000000000001','张三',1000.00),
+('0000000000000002','李四',2000.00)
+ alter table david_count add id int PRIMARY key auto_increment first;
+
+select * from david_count;
+use david_test;
+-- 1 事务操作(要求innodb的存储引擎，dbd也支持事务，但是收费的）
+-- 1.1 手动操作
+-- 1）开启事务：告诉系统以下操作先不要直接写入到数据库，先存放到事务日志
+
+start TRANSACTION;
+-- 2）进行事务操作，一系列操作，张三余额减少，李四增加
+update david_count set money=money-200 where id=1;
+update david_count set money=money+200 where id=2;
+-- 3)关闭事务：选择性的将日志文件保存的数据保存到数据库表中或者直接清空事务日志（回滚）
+-- 提交事务：同步数据成功，commit;
+-- 回滚事务：同步数据失败
+commit;
+ROLLBACK;
+
+-- 2.事务原理 ：事务开始后所有操作都会保存到事务日志中，事务日志只有在得到cimmit命令之后才会将数据保存到数据表中，其它任何情况都会清空
+
+-- 3.回滚点：再某一个成功的操作完成之后，后续的操作有可能失败，但是不管成功失败前面的操作都已成功，可以在当前位置，设置一个点，可以供后续失败
+-- 操作返回到该位置，而不是返回所有操作，这个点就是回滚点。
+
+-- 设置：SAVEPOINT 回滚点名字，rollback to 回滚点名字：回滚到回滚点
+
+start transaction ;
+update david_count set money=money+1200 where id=1;
+-- 设置回滚点
+SAVEPOINT sp1;
+update david_count set money=money-1200*0.05 where id=2;
+rollback to sp1;
+update david_count set money=money-1200*0.05 where id=1;
+commit;
+select * from david_count;
+
+-- 4 自动事务处理：mysql中事务都是默认自动处理的，用户操作完会自动同步到数据表中
+-- 自动事务：系统通过autocommit变量控制
+show VARIABLES like 'autocommit';
+
+-- 关闭自动提交 set autocommit=off/0;
+set autocommit =off;-- 自动提交关闭后需要手动提交commit和回滚rollback，通常开启自动提交事务
+set autocommit =on;
+-- 5.事务特性 acid
+-- A:	Atomic原子性，事务整个操作是一个整体，不可分割，要么成功，要么失败。
+-- C:Consistent一致性，事务操作的前后，数据表中的数据没有变化
+-- I：Isolation隔离性，多个事务操作之间相互不受影响
+-- D：Durability永久性，数据一旦提交，不可改变。
+-- 锁机制：innodb默认是行锁，但是如果在事务操作中没有使用到索引，那么系统会全表检索数据，那么系统会自动升级为表锁
+-- 行锁：只有当前行被锁住，别的用户不能被操作
+-- 表锁：整张表被锁住，别的用户不能操作表的所有数据
+
+-- 二、变量，分为系统变量和自定义变量
+-- 1.系统变量：大部分用户不需要使用系统变量，系统变量是来控制服务器的表现的，如 autocommit，auto_increment等等
+-- 1.1 查看系统所有变量
+show variables;
+-- 1.2 查看具体变量值，任何一个有数据返回的内容都是由select查询
+-- select @@变量名
+select @@autocommit,@@version;
+-- 1.3 修改系统变量
+-- 1.3.1会话级别：当前当前客户端，当此连接有效 set 变量=值 或者 set @@变量名=值 都可以
+set autocommit=0;
+-- 1.3.2 全局修改：一次修改，永久有效（对所有客户端都有效） set global 变量名=值
+set global autocommit=1;-- 如果其它客户端当前已经连接上服务器，那么当此修改要等退出后重新登陆才生效。
+
+-- 1.2 自定义变量
+-- 定义变量：为了区分系统变量，规定用户自定义变量必须使用一个@符号开头 set @变量名=值；
+set @name='张三';
+-- 查看变量
+select @name;
+-- 在MySQL中”=“通常当作比较符号使用，mysql为了区分赋值和比较的概念，重新定义了一个赋值符号 :=
+set @age :=18;-- 也是可以的
+select @age;
+
+-- mysql允许从数据表中获取数据给自定义变量：
+-- 方法1：边赋值边查看
+-- select @变量名：=字段名 from 数据源  注意此处必须用 :=，如果使用=就会变成比较，返回0或者1
+use david_test;
+show tables;
+select * from david_class;
+select @name_v := name,name from david_class;
+
+select @name_v;
+-- 方法2：只有赋值不看结果，要求是数据最多只允许一条，因为mysql不支持数组
+-- select 字段列表 from 数据源 into 变量列表；
+select * from david_class;
+select id,name from david_class where id=3 into @id,@name2;
+select @id,@name2;
+
+-- 注意：所有自定义变量都是会话级别的，当前客户端当此连接有效。
+
+-- 三、触发器
+-- 触发器：trigger事先为某张表绑定好一段代码，当表中的某些内容发生改变的时候（增、删、改）系统会自动触发代码执行
+-- 触发器要素：触发类型：insert update delete，触发时间:BEFORE,AFTER，组合出来共6种，触发对象:针对表中的每一行
+-- 一张表中只能拥有一种触发时间类型的触发器，即一张表最多有6个触发器
+
+-- 1.创建触发器
+delimiter 自定义符号
+create trigger  触发器名字 触发时间 事件类型 on  for each row 
+BEGIN
+-- 里面语句；
+end ;
+ delimiter ;
+
+-- 创建表
+create table my_goods(
+id int PRIMARY key auto_increment,
+name varchar(20) not null,
+price DECIMAL(10,2) default 1,
+inv int comment '库存'
+) charset utf8;
+
+insert into my_goods values (null,'苹果',5.5,1000),(null,'香蕉',4.5,2000),(null,'梨子',3.5,3000),(null,'橘子',2.5,4000);
+
+create table my_order(
+	id int PRIMARY key auto_increment,
+	g_id int not null comment '商品id',
+	g_number int comment '商品数量'
+) charset utf8;
+
+-- 创建触发器 订单生成一个，商品减少对应订单上面的数量
+delimiter $$ -- 临时修改语句结束符
+create trigger after_order after insert on my_order for each row
+BEGIN
+ UPDATE my_goods set inv=inv- 1 where id=1;
+end $$
+delimiter  ;-- 还原语句结束符
+
+-- 2.查看所有触发器
+-- show triggers [like xxx]
+show triggers;
+-- 查看触发器创建语句
+-- show create trigger 触发器名子
+show create trigger after_order;
+
+-- 所有的触发器都会保存到一张表中information_schema.trggers;
+select * from information_schema.TRIGGERS;
+-- 3 使用触发器
+-- 触发器：不需要手动调用，而是某种条件满足自动触发
+
+select * from my_goods;
+select * from my_order;
+-- 订单插入数据
+insert into my_order values (null,1,1);
+
+-- 4 修改删除触发器 触发器只能删除不能修改
+drop trigger after_order;
+
+-- 5 触发器记录：不管触发器是否触发，只要当某种操作准被执行，系统就会将当前操作的记录的当前状态和即将执行之后的状态保存，供触发器使用
+-- 当前状态保存再OLD，操作之后的保存在NEW中。insert的时候不存在old,删除的时候不存在new.
+-- 使用方式 OLD.字段/NEW.字段名
+
+-- 优化触发器
+delimiter $$
+create trigger after_order after insert on my_order for each ROW
+BEGIN
+	update my_goods set inv=inv- new.g_number where id=new.g_id; 
+end $$
+delimiter ;
+
+-- 查看效果
+insert into my_order values (null,2,10);
+
+
+-- 6 if分支
+-- sql代码执行结构：顺序，分支，循环
+-- 在mysql只有if分支
+-- if  条件 then 满足条件的代码 else  另外的代码 end if;
+
+-- 执行生成订单前检查库存是否足够
+delimiter &&
+create trigger befor_order before insert on my_order for each ROW
+BEGIN
+	-- 首先查出对应id的货物的库存
+select inv from my_goods where id=new.g_id into @inv;
+if @inv<new.g_number THEN
+-- mysql 触发器没有提供一个能够阻止事件发生的能力，采用人工暴力阻止
+insert into xxx values (xxxx);
+end if;
+end &&
+delimiter ;
+
+-- 查看效果
+insert into my_order values (null,4,5000);-- 报错
+-- 查看效果
+insert into my_order values (null,4,10);-- 正确
+
+select * from my_order;
+select * from my_goods;
+
+-- 7 while 循环（没有for循环）
+-- 语法：while 判断条件 do 执行代码，变更循环条件  end while;
+-- 循环控制：mysql无break,CONTINUE,但是有对应的iterate（contine),leave(break)
+-- 使用方式：Iterate/Leave 循环名字
+-- 完整语法：
+-- 循环名字：while 条件 do
+--     执行代码
+--     iterate/leave 循环名字;
+-- end while;
+-- 循环不太适合 触发器，循环主要运用于函数
+
+-- 四、函数
+-- 函数：将一个代码块封装到一个结构中，在需要需要执行代码块的时候，调用执行即可（代码复用）。
+-- 函数分为：系统函数和自定义函数
+-- 1.系统函数：系统定义好的函数，直接调用即可，注意：任何函数都有返回值，因此函数的调用时通过select调用。
+-- mysql 中，字符串操作的基本单位时字符，不是字节
+-- 常用mysql函数：
+-- SUBSTRING(str FROM pos FOR len):字符串截取
+
+set @cn='世界你好';
+set @en='helloworld';
+select SUBSTRING(@cn ,1,1);-- mysql中字符串下标是从1开始，长度为1，中文也是一个字，说明字符串单位是字符而不是字节
+-- CHAR_LENGTH(str) 字符串长度
+select CHAR_LENGTH(@cn);
+-- LENGTH(str) 字符串占用的字节数
+select CHAR_LENGTH(@cn),CHAR_LENGTH(@en),LENGTH(@cn),LENGTH(@en);-- 4 10 12 10
+-- 以上说明 英文字符是一个字符，而且一个字母占用一个字节，中文一个字是一个字符，在utf8编码中文一个字占用三个字节
+-- INSTR(str,substr) 判断子字符串是否存在另外一个字符串中,若存在返回开始下标，如果不存在返回0
+select INSTR(@cn,'世界'),INSTR(@cn,'啊啊'),INSTR(@en,'ll');
+-- LPAD(str,len,padstr) 左填充
+select LPAD(@cn,20,'欢迎'),LPAD(@en,20,'hello');-- 注意函数操作并不会改变变量本身的数据，如果要将改变了的结果保存下来，可以保存在一个新的变量中
+select LPAD(@cn,20,'欢迎')into @cnn;
+select @cn,@cnn;
+-- INSERT(str,pos,len,newstr) 替换：找到目标位置，指定长度的字符型，替换成目标字符串
+select INSERT(@en,3,3,'y');
+
+-- STRCMP(expr1,expr2) 字符串比较：小返回-1，等返回0，大返回1(默认校对集不区分大小写）
+ 
+set @f='hello';
+set @s='hey';
+set @t='HEY';
+select STRCMP(@f,@s),STRCMP(@s,@t),STRCMP(@s,@f);
+
+-- 2自定义函数
+-- 函数 要素：函数名，参数列表（实参和形参），返回值，函数体（作用域)
+-- 2.1 创建函数
+-- 语法 ：create function 函数名（[形参列表]） returns 返回数据类型 begin 函数体  返回值：return 类型（前面定义的类型） END
+ create function display() returns int return 100;
+-- 调用函数
+select display();
+-- 2.2 查看函数
+-- 2.2.1 查看所有函数
+-- show function status [like '']
+show function status;-- 结果可以看出函数的作用域数据库
+show create function display;
+-- 2.3 删除&修改函数：先删除后新增
+drop FUNCTION display;
+-- 2.4 参数：形参和实参
+-- 定义时的参数叫形参，调用时的参数叫实参（实际参数可以是个数值也可以是个变量）
+-- 形参要求必须指定数据类型
+function 函数名(形参名字 字段类型） returns ....
+
+-- 计算1-n的和
+delimiter ##
+create function my_sum (n int) returns INT
+BEGIN
+	set @i=1;-- @定义的是全局变量，没有的可以理解为局部变量
+	set @res=0;
+	while @i<= n DO
+		-- 注意：任何变量修改必须用set,mysql无+= ，++这种，必须写完整的表达式
+		set @res=@res+@i;
+		set @i=@i+1;
+  end while;
+ return @res;
+end ##
+delimiter ;
+
+select my_sum(10);
+select @i,@res;-- 在函数内部的定义的变量，在函数外部也可以使用，同样在外部定义的变量，在函数的内部也可以使用
+-- 2.5 作用域：mysql中全局变量在任何地方都可以使用，局部变量只能在函数内部使用。
+-- 全局变量：使用set关键字定义，使用@符号标志
+-- 局部变量：使用declare关键字声明，没有@符号标志所有局部变量的申明必须在函数体开始之前。
+
+-- 计算1-n的和要求值是5的倍数不参与计算
+delimiter ##
+create function my_sum1 (n int) returns INT
+BEGIN
+	declare i int DEFAULT 1;
+	DECLARE res int DEFAULT 0;
+	mywhile:while i<= n DO
+			if i%5=0 
+			then 
+				set i=i+1;
+				ITERATE mywhile ;
+			else
+				set res=res+i;-- 注意此处：即便是局部变量的修改还是要使用set
+				set i=i+1;
+			end if;
+
+  end while;
+ return res;
+end ##
+delimiter ;
+select my_sum1(10);
+
+-- 五、存储过程procedure：用来处理数据的方式，可以相当于无返回的函数
+-- 1.创建过程
+-- 语法：create procedure 过程名字[参数列表] begin 过程体 end
+-- 常规用法：
+delimiter ##
+create PROCEDURE pro1()
+BEGIN
+end ##
+delimiter ;
+-- 最简单的过程
+create procedure p1()
+select * from david_student;
+
+-- 2.查看过程：查看函数的方式完全适合过程，只是关键字换成procedure
+show procedure status;
+show create PROCEDURE david_mysql_learn.test002;
+
+-- 3.调用过程
+-- 因为过程是无返回值的，所以select是不能调用的，使用call
+call p1();
+-- 4.修改&删除过程;先删除后新增
+drop procedure p1;
+-- 5 存储过程的参数
+-- 函数的参数需要指定数据类型，过程更严格
+-- 过程还有自己的类型定义：三种类型：in,out,INOUT
+-- in:表示数据只是从外部传入内部使用（值传递）,可以是数值可以是变量
+-- out:只允许过程内部使用（不用外部数据），给外部使用的（引用传递:外部的数据会先清空才会进入内部）：只能是变量
+-- inout:外部可以在内部使用，内部的修改可以给外部使用：典型的应用传递，只能传变量
+
+-- create procedure 过程名字（in 形参名字 数据类型，out 形参名字 数据类型，inout 形参名字 数据类型) begin 过程体 end
+
+delimiter ##
+create PROCEDURE pro1(in n1 int,out n2 int,inout n3 int)
+BEGIN
+select n1,n2,n3;-- n2的值一定是null,因为out会先清空
+end ##
+delimiter ;
+-- 调用out inout 参数必须传入变量而不是数值
+set @n1=1;
+set @n2=2;
+set @n3=3;
+select @n1,@n2,@n3;
+call pro1(@n1,@n2,@n3);
+select @n1,@n2,@n3;-- out inout属于引用传递，内部修改会影响外部
+
+-- 存储过程对于变量的操作（返回）是滞后的：是在存储过程调用结束的时候，才会重新将内部修改的值赋值给外部传入的全局变量。
+-- 例子：
+
+
+delimiter ##
+create PROCEDURE pro2(in n1 int,out n2 int,inout n3 int)
+BEGIN
+	select n1,n2,n3;-- 查看局部变量
+	set n1=10;
+	set n2=100;
+	set n3=100;
+	select n1,n2,n3;-- 查看局部变量
+	select @n1,@n2,@n3;-- 查看局部变量,在过程里面全局变量还没赋值，所以全变量还是原始值
+end ##
+delimiter ;
+
+call pro2(@n1,@n2,@n3);
+-- 在存储过程调用之后才会把修改对应的值赋值给out inout类型，但是in类型还是不会改变的
+select @n1,@n2,@n3; 

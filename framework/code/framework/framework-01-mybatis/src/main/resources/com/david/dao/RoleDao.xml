@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.david.dao.RoleDao">
+    <resultMap id="rolesMap" type="com.david.domain.Role">
+        <id property="id" column="rid"></id>
+        <result property="roleName" column="role_name"></result>
+        <result property="roleDesc" column="role_desc"></result>
+
+        <collection property="users" ofType="com.david.domain.User">
+            <result property="username" column="username"></result>
+            <result property="birthday" column="birthday"></result>
+            <result property="sex" column="sex"></result>
+            <result property="address" column="address"></result>
+        </collection>
+    </resultMap>
+    <select id="findAll" resultMap="rolesMap">
+        select * from role;
+    </select>
+
+    <select id="findRolesAndUsers" resultMap="rolesMap">
+        select r.id rid,r.role_name,r.role_desc,u.*
+        from role r
+        left join user_role ur on r.id=ur.rid
+        left join  user u on ur.uid=u.id;
+    </select>
+    <!--延迟加载配置-->
+    <resultMap id="rolesMapLazy" type="com.david.domain.Role">
+        <id property="id" column="rid"></id>
+        <result property="roleName" column="role_name"></result>
+        <result property="roleDesc" column="role_desc"></result>
+
+        <collection property="users" ofType="com.david.domain.User" select="com.david.dao.UserDao.findUserById" column="uid">
+        </collection>
+    </resultMap>
+
+    <select id="findRolesAndUsersLazy" resultMap="rolesMapLazy">
+        select r.id rid,r.role_name,r.role_desc,ur.uid
+        from role r
+        left join user_role ur on r.id=ur.rid
+
+    </select>
+</mapper>

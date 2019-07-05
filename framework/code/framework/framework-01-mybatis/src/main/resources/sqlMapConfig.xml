@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<!--mybatis-->
+<configuration>
+    <!--配置properties
+    可以在标签内部配置连接数据库的信息，也可以通过属性引用外部配置文件信息
+    resource:用于指定配置文件的位置，是按照类路径的写法来写的，并且必须存在类路径下
+    url属性：
+            是要求按照Url的写法来写地址
+            URL：Uniform Resource Locator 统一资源定位符。它是可以唯一标识一个资源的位置。
+            它的写法：
+                http://localhost:8080/mybatisserver/demo1Servlet
+                协议      主机     端口       URI
+
+            URI:Uniform Resource Identifier 统一资源标识符。它是在应用中可以唯一定位一个资源的。
+    -->
+    <!--<properties resource="jdbcConfig.properties">--><!--指定外部配置文件的方式来配置-->
+    <properties url="file:///F:/learn/java-all/framework/code/framework/framework-01-mybatis/src/main/resources/jdbcConfig.properties">
+        <!--内部配置的方式-->
+        <!--<property name="driver" value="com.mysql.jdbc.Driver"></property>-->
+        <!--<property name="url" value="jdbc:mysql://localhost:3306/david_mybatis?characterEncoding=UTF-8"></property>-->
+        <!--<property name="username" value="root"></property>-->
+        <!--<property name="password" value="root"></property>-->
+
+    </properties>
+    <!--配置延迟加载-->
+    <settings>
+        <!--开启延迟加载-->
+        <setting name="lazyLoadingEnabled" value="true"/>
+        <setting name="aggressiveLazyLoading" value="false"/>
+        <!--配置开启二级缓存-->
+        <setting name="cacheEnabled" value="true"/>
+    </settings>
+
+    <!--使用typeAliases配置别名，它只能配置domain中的类名-->
+    <typeAliases>
+        <!--采用以下配置后，在mapper中可以将全类名改为user,简化书写，注意指定了别名就不再却分大小写，
+            即，user USER都可以的。其中mybatis默认配置了一些常用的别名，比如Integer String等等的别名。
+        -->
+        <!--<typeAlias type="com.david.domain.User" alias="user"></typeAlias>-->
+        
+        <!--用于指定要配置别名的包，当指定别名之后，该包下的实体类都会注册别名，并且类名就是别名，不区分大小写-->
+        <package name="com.david.domain"></package>
+    </typeAliases>
+
+
+    <!--mysql环境配置-->
+    <environments default="mysql">
+        <environment id="mysql">
+            <transactionManager type="JDBC"></transactionManager>
+            <!--配置数据源（连接池）-->
+            <dataSource type="POOLED">
+                <!--配置数据库的连接信息-->
+                <property name="driver" value="${driver}"/>
+                <property name="url" value="${url}"/>
+                <property name="username" value="${username}"/>
+                <property name="password" value="${password}"/>
+            </dataSource>
+        </environment>
+    </environments>
+    <!--指定映射文件的位置，每个DAO对应一个配置文件-->
+    <mappers>
+        <!--使用mapper配置文件的方式，使用此方式需要将UserDao.xml还原-->
+        <!--<mapper resource="com/david/dao/UserDao.xml"/>-->
+        <!--使用注解的方式-->
+        <!--<mapper class="com.david.dao.UserDao"/>-->
+
+        <!--此处url属性使用的方式同properties的url属性使用方式-->
+        <!--<mapper url=""></mapper>-->
+        
+        <!--此处package标签是用于指定到接口所在的包，当指定完之后就不需要再写mapper以及class和resource了-->
+        <package name="com.david.dao"></package>
+    </mappers>
+</configuration>

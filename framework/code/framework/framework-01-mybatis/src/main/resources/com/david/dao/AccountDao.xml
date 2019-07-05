@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.david.dao.AccountDao">
+    <resultMap id="accountAndUser" type="com.david.domain.Account">
+        <id property="id" column="id"></id>
+        <result property="money" column="money"></result>
+        <association property="user" javaType="com.david.domain.User">
+            <id property="id" column="uid"></id>
+            <result property="username" column="username"></result>
+            <result property="birthday" column="birthday"></result>
+            <result property="sex" column="sex"></result>
+            <result property="address" column="address"></result>
+        </association>
+    </resultMap>
+    <!--1对1延迟加载的配置方式-->
+    <resultMap id="accountAndUserLazy" type="com.david.domain.Account">
+        <id property="id" column="id"></id>
+        <id property="uid" column="uid"></id>
+        <result property="money" column="money"></result>
+
+        <!-- 一对一的关系映射：配置封装user的内容
+        select属性指定的内容：查询用户的唯一标识：
+        column属性指定的内容：用户根据id查询时，所需要的参数的值
+        -->
+        <association property="user" column="uid" select="com.david.dao.UserDao.findUserById" javaType="com.david.domain.User"></association>
+    </resultMap>
+
+    <select id="findAllCount" resultType="com.david.domain.Account">
+        select * from account;
+    </select>
+    <!--组合方式实现1对1查询-->
+    <select id="findAccountAndUser" resultType="com.david.domain.AccountUser">
+        select a.*,u.username,u.birthday,u.sex,u.address from account a,user u where u.id=a.uid;
+    </select>
+    <!--配置方式实现1对1-->
+    <select id="findAccountAndUserMybatis" resultMap="accountAndUserLazy">
+        select a.*,u.username,u.birthday,u.sex,u.address,u.id uid from account a,user u where u.id=a.uid;
+    </select>
+    <!--1对1带延迟加载查询-->
+    <select id="findAccountAndUserLazy" resultMap="accountAndUserLazy">
+        select * from account a;
+    </select>
+
+</mapper>

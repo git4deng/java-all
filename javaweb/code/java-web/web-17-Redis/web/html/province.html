@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>省份选择</title>
+    <script src="../js/jquery-3.3.1.min.js"></script>
+    <script>
+        $(function () {
+            $.get("/provinceServlet",{},function (data) {
+                //alert(data);
+                //[{"id":1,"name":"北京"},{"id":2,"name":"上海"},{"id":3,"name":"广州"},{"id":4,"name":"陕西"}]
+                var province=$("#province");
+                //遍历数组
+                $(data).each(function () {
+                    //创建option
+                    var option="<option name='"+this.id+"'>"+this.name+"</option>";
+                    //追加数据
+                    province.append(option);
+                })
+            });
+        });
+    </script>
+</head>
+<body>
+    <select id="province">
+        <option>--请选择省份--</option>
+    </select>
+</body>
+</html>

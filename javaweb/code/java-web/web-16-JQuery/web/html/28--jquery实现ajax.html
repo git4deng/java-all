@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>jquery实现Ajax</title>
+    <script src="../js/jquery-3.3.1.min.js"></script>
+    <script>
+        function fun() {
+            $.ajax({
+                url:"/ajaxServlet",
+               // data:"username=david",//请求参数
+                data:{"username":"david"},// 推荐使用json的方式
+                type:"POST",
+                success:function (data) {
+                    alert(data);
+                },
+                error:function () {
+                    alert("出错啦...")
+                },//表示如果请求响应出现错误，会执行的回调函数
+
+                dataType:"text"//设置接受到的响应数据的格式
+            });
+        }
+        function asynGet() {
+          $.get(
+              "/ajaxServlet",
+              {"username":"david"},
+              function (data) {
+                  console.log(data);
+              },
+              "text"
+          );
+        }
+        function asynGetPost() {
+          $.post(
+              "/ajaxServlet",
+              {"username":"david"},
+              function (data) {
+                  console.log(data);
+              },
+              "text"
+          );
+        }
+
+
+    </script>
+</head>
+<body>
+    <input type="button" value="发送异步请求" onclick="fun();">
+    <input type="button" value="发送异步GET请求" onclick="asynGet();">
+    <input type="button" value="发送异步POST请求" onclick="asynGetPost();">
+</body>
+</html>

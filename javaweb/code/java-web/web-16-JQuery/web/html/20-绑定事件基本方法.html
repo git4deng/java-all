@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="../js/jquery-3.3.1.min.js" type="text/javascript" charset="utf-8"></script>
+    <script type="text/javascript">
+        $(function () {
+            /*//1.常规方式
+            $("#name").click(function () {
+                console.log("我被点击了.....")
+            });
+
+            $("#name").mouseover(function () {
+                console.log("鼠标来了.....")
+            });
+            $("#name").mouseout(function () {
+                console.log("鼠标走了.....")
+            });
+            */
+            //jQuery支持链式编程,不推荐，不利于代码阅读
+            $("#name").click(function () {
+                console.log("我被点击了.....")
+            }).mouseover(function () {
+                console.log("鼠标来了.....")
+            }) .mouseout(function () {
+                console.log("鼠标走了.....")
+            });
+
+            //$("#name").focus();//让文本输入框获得焦点
+            //表单对象.submit();//让表单提交
+        });
+
+
+
+
+    </script>
+</head>
+<body>
+<input id="name" type="text" value="绑定点击事件">
+</body>
+</html>

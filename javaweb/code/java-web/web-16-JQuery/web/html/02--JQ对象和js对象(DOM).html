@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>JQuery-02</title>
+    <script src="../js/jquery-3.3.1.min.js"></script>
+</head>
+<body>
+    <div id="div1">div1....</div>
+    <div id="div2">div2....</div>
+</body>
+<script>
+   //通过原生js的方式获取
+    var div1 = document.getElementById("div1");
+    var divs = document.getElementsByTagName("div");
+    alert(divs);
+    //原生js改变每个div的值的方式
+   for (var i = 0; i < divs.length; i++) {
+       //divs[i].innerHTML = "aaa";
+
+       //转换成jq对象,并使用jq的方法
+       $(divs[i]).html("cccc");
+   }
+
+
+    //通过jQuery的方式获取
+    var $divs = $("div");
+   alert("jq:"+$divs);
+   //jquery方式
+//   $divs.html("bbb");
+   /*
+           1. JQuery对象在操作时，更加方便。
+           2. JQuery对象和js对象方法不通用的.
+           3. 两者相互转换
+               * jq -- > js : jq对象[索引] 或者 jq对象.get(索引)
+               * js -- > jq : $(js对象)
+        */
+</script>
+</html>

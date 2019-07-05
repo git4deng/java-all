@@ -35,12 +35,18 @@ public class R05CheckCodeServlet extends HttpServlet {
         //2.3验证码
         String code="1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
         Random random=new Random();
+
+        StringBuffer sb=new StringBuffer();
         for (int i = 0; i < 4; i++) {
             int index = random.nextInt(code.length());
             char ch=code.charAt(index);
             int x =(i+1)*20;
             g.drawString(ch+"",x,25);
+            sb.append(ch);
         }
+        //将生成的验证码存入session中
+        req.getSession().setAttribute("checkCode",sb.toString());
+
         //2.4 画干扰线
         g.setColor(Color.GREEN);
         for (int i = 0; i < 10; i++) {
@@ -51,12 +57,6 @@ public class R05CheckCodeServlet extends HttpServlet {
             int y2 = random.nextInt(height);
             g.drawLine(x1,y1,x2,y2);
         }
-
-
-
-
-
-
         //3.输出图片
         ImageIO.write(image,"jpg",resp.getOutputStream());
     }
